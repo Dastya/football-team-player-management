@@ -16,7 +16,6 @@ A simple web application for managing football teams and players. The applicatio
 * <a href="#usage">Usage</a>
 * <a href="#features">Features</a>
 
-<hr>
 
 # <h2 id="first">Getting Started</h2> 
 ## <h2 id="second">Prerequisites</h2>
@@ -32,12 +31,10 @@ A simple web application for managing football teams and players. The applicatio
 3. Build the application: "mvn clean package"
 4. Start the backend server: "java -jar target/football-team-player-management-0.0.1-SNAPSHOT.jar"
 5. Install the dependencies: "npm install"
-<hr>
 
 # <h2 id="usage">Usage</h2>
 Once the backend server is running, you can access the application at "http://localhost:8080"
 
-<hr>
 
 # <h2 id="features">Features</h2>
 * Basic CRUD operations for teams and players
