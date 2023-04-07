@@ -27,7 +27,7 @@ A simple web application for managing football teams and players. The applicatio
 * Angular CLI
 
 ## <h2 id="third">Installation</h2>
-1. Clone the repository: git clone "https://github.com/yourusername/football-team-player-management.git"
+1. Clone the repository: git clone "https://github.com/Dastya/football-team-player-management.git"
 2. Navigate to the backend directory: "cd football-team-player-management/backend"
 3. Build the application: "mvn clean package"
 4. Start the backend server: "java -jar target/football-team-player-management-0.0.1-SNAPSHOT.jar"
