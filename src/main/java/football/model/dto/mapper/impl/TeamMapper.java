@@ -1,6 +1,5 @@
 package football.model.dto.mapper.impl;
 
-import java.util.stream.Collectors;
 import football.model.Player;
 import football.model.Team;
 import football.model.dto.mapper.RequestDtoMapper;

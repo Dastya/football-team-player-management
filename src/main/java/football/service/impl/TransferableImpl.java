@@ -1,13 +1,13 @@
 package football.service.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.List;
 import football.model.Player;
 import football.model.Team;
 import football.service.PlayerService;
 import football.service.TeamService;
 import football.service.Transferable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,51 +23,69 @@ public class TransferableImpl implements Transferable {
         Team sender = teamService.get(senderId);
         Team receiver = teamService.get(receiverId);
 
+        validatePlayer(player);
+        validateTeam(sender, senderId);
+        validateTeam(receiver, receiverId);
+        validatePlayerInTeam(sender, player);
+
+        BigDecimal amount = calculateTransferAmount(player, receiver);
+        updateMoneyAccounts(sender, receiver, amount);
+        updatePlayersInTeams(sender, receiver, player);
+
+        return String.format("Transferred player %s from %s to %s for %s",
+                player.getName(), sender.getName(), receiver.getName(), amount);
+    }
+
+    private void validatePlayer(Player player) {
         if (player == null) {
-            throw new RuntimeException("Player with id " + playerId + " not found");
+            throw new RuntimeException("Player not found");
         }
-        if (sender == null) {
-            throw new RuntimeException("Team with id " + senderId + " not found");
+    }
+
+    private void validateTeam(Team team, Long teamId) {
+        if (team == null) {
+            throw new RuntimeException("Team with id " + teamId + " not found");
         }
-        if (receiver == null) {
-            throw new RuntimeException("Team with id " + receiverId + " not found");
-        }
-        if (!sender.getPlayers().contains(player)) {
-            throw new RuntimeException("Team " + sender.getName()
+    }
+
+    private void validatePlayerInTeam(Team team, Player player) {
+        if (!team.getPlayers().contains(player)) {
+            throw new RuntimeException("Team " + team.getName()
                     + " does not have player " + player.getName());
         }
+    }
 
-        BigDecimal amount = BigDecimal.valueOf(player.getExperience())
+    private BigDecimal calculateTransferAmount(Player player, Team receiver) {
+        return BigDecimal.valueOf(player.getExperience())
                 .multiply(BigDecimal.valueOf(100000L))
                 .divide(BigDecimal.valueOf(player.getAge()), RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100 + receiver.getCommissionInPercent()))
                 .divide(BigDecimal.valueOf(100));
+    }
 
-        BigDecimal senderMoneyAccount = sender.getMoneyAccount();
-        BigDecimal receiversMoneyAccount = receiver.getMoneyAccount();
-
-        if (amount.compareTo(senderMoneyAccount) > 0) {
+    private void updateMoneyAccounts(Team sender, Team receiver, BigDecimal amount) {
+        if (amount.compareTo(sender.getMoneyAccount()) > 0) {
             throw new RuntimeException("Not enough money on "
                     + sender.getName() + " money account");
         }
 
-        senderMoneyAccount = senderMoneyAccount.add(amount);
-        receiversMoneyAccount = receiversMoneyAccount.subtract(amount);
+        sender.setMoneyAccount(sender.getMoneyAccount().subtract(amount));
+        receiver.setMoneyAccount(receiver.getMoneyAccount().add(amount));
 
-        sender.setMoneyAccount(senderMoneyAccount);
-        receiver.setMoneyAccount(receiversMoneyAccount);
+        teamService.save(sender);
+        teamService.save(receiver);
+    }
 
+    private void updatePlayersInTeams(Team sender, Team receiver, Player player) {
         List<Player> senderPlayers = sender.getPlayers();
         senderPlayers.remove(player);
         sender.setPlayers(senderPlayers);
-        teamService.save(sender);
 
         List<Player> receiverPlayers = receiver.getPlayers();
         receiverPlayers.add(player);
         receiver.setPlayers(receiverPlayers);
-        teamService.save(receiver);
 
-        return String.format("Transferred player %s from %s to %s for %s",
-                player.getName(), sender.getName(), receiver.getName(), amount);
+        teamService.save(sender);
+        teamService.save(receiver);
     }
 }
